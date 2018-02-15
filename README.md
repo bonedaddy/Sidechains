@@ -4,4 +4,4 @@ Includes scripts to generate a PoA network genesis file, boot node, and sealer n
 Solidity contracts for both the private and public network will be included.
 
 
-https://i.imgflip.com/24m0cg.jpg
+[logo] https://i.imgflip.com/24m0cg.jpg
