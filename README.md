@@ -5,4 +5,4 @@ Solidity contracts for both the private and public network will be included.
 
 [logo]: https://github.com/postables/Sidechains/blob/master/img/yodog.jpg "yodawg"
 
-[logo]
+![alt-text][logo]
