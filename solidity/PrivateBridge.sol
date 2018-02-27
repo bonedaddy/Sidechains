@@ -24,8 +24,40 @@ contract PrivateBridge is Sealers {
 		bool	approved;
 	}
 
+
+	/*
+		This is used to store data necessary to execute a data transfer from the private chain to the main chian
+		This could be executing a function from the private chain. For example, we can have gas expensive business logic on the private chain, then for the final step
+		transfer the "data" to the mainchain to execute the final function.
+	*/
+	struct DataTransfer {
+		address pAddress;
+		address mAddress;
+		address mContract;
+		bytes 	data;
+		bool 	approved;
+	}
+
 	// k1  = paddress k2 = block num v1 = proposal
-	mapping (address => mapping (uint256 => SwapProposal)) private proposedTokenSwaps;
+	mapping (address => mapping (uint256 => SwapProposal)) 	private proposedTokenSwaps;
+	mapping (address => mapping (uint256 => DataTransfer))  private proposedDataSwap;
+
+
+
+	function proposeDataTransfer(
+		address _mAddress,
+		address _mContract,
+		bytes   _data)
+		public
+		returns (bool)
+	{
+		proposedDataSwap[msg.sender][block.number].pAddress = msg.sender;
+		proposedDataSwap[msg.sender][block.number].mAddress = _mAddress;
+		proposedDataSwap[msg.sender][block.number].mContract = _mContract;
+		proposedDataSwap[msg.sender][block.number].data = _data;
+	}
+
+
 
 	/**
 		When this is fired, a sealer wll be taksed with validating the proposal
@@ -36,7 +68,7 @@ contract PrivateBridge is Sealers {
 	*/
 	event SwapApproved(address _pAddress, address _mAddress, uint256 _amount);
 
-	function validateProposal(
+	function validateTokenSwapProposal(
 		address _pAddress,
 		uint256 _blockProposedAt,
 		uint256 _depositValue,
@@ -51,9 +83,10 @@ contract PrivateBridge is Sealers {
 		bytes32 _prefix = keccak256(msg.sender, _pAddress, _depositValue, _blockProposedAt);
 		bytes32 prefixedHash = keccak256(prefix, _prefix);
 		address signer = verifySignature(_h, _v, _r, _s);
+		signer; // silence compiler warning
 		assert(prefixedHash == _h);
 		proposedTokenSwaps[_pAddress][_blockProposedAt].approved = true;
-		SwapApproved(_pAddress, swaps[_pAddress][_blockProposedAt].mAddress, _depositValue);
+		SwapApproved(_pAddress, proposedTokenSwaps[_pAddress][_blockProposedAt].mAddress, _depositValue);
 		return true;
 	}
 
