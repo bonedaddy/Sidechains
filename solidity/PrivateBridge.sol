@@ -40,11 +40,29 @@ contract PrivateBridge is Sealers {
 
 	// k1  = paddress k2 = block num v1 = proposal
 	mapping (address => mapping (uint256 => SwapProposal)) 	private proposedTokenSwaps;
+	// k1 = pAddress, k2 = block num, v1 = proposal
 	mapping (address => mapping (uint256 => DataTransfer))  private proposedDataSwap;
 
+	/**
+		When this is fired, a sealer wll be taksed with validating the proposal
+	*/
+	event SwapProposed(address _pAddress, address _mAddress, uint256 _blockNumber, uint256 _deposit);
+	/**
+		When this event is fired, the swap is approved, and the bridge will send a transaction to the mainnet
+	*/
+	event SwapApproved(address _pAddress, address _mAddress, uint256 _amount);
+	event DataSwapProposed(
+		address _pAddress,
+		address _mAddress,
+		address _mContract,
+		uint256 _blockProposedAt,
+		bytes _data);
+	event DataSwapApproved(
+		address _mAddress,
+		address _mContract,
+		bytes _data);
 
-
-	function proposeDataTransfer(
+	function proposeDataSwap(
 		address _mAddress,
 		address _mContract,
 		bytes   _data)
@@ -55,18 +73,39 @@ contract PrivateBridge is Sealers {
 		proposedDataSwap[msg.sender][block.number].mAddress = _mAddress;
 		proposedDataSwap[msg.sender][block.number].mContract = _mContract;
 		proposedDataSwap[msg.sender][block.number].data = _data;
+		DataSwapProposed(
+			msg.sender,
+			_mAddress,
+			_mContract,
+			block.number,
+			_data
+		);
+		return true;
 	}
 
-
-
-	/**
-		When this is fired, a sealer wll be taksed with validating the proposal
-	*/
-	event SwapProposed(address _pAddress, address _mAddress, uint256 _blockNumber, uint256 _deposit);
-	/**
-		When this event is fired, the swap is approved, and the bridge will send a transaction to the mainnet
-	*/
-	event SwapApproved(address _pAddress, address _mAddress, uint256 _amount);
+	function validateDataSwap(
+		address _pAddress,
+		uint256 _blockProposedAt,
+		bytes32 _h,
+		uint8	_v,
+		bytes32 _r,
+		bytes32 _s)
+		public
+		onlySealers
+		returns (bool)
+	{
+		require(!proposedDataSwap[_pAddress][_blockProposedAt].approved);
+		address signer = ecrecover(_h, _v, _r, _s);
+		assert(signer == singularity);
+		proposedDataSwap[_pAddress][_blockProposedAt].approved = true;
+		// this event will cause the relays to send the datato the mainnet
+		DataSwapApproved(
+			proposedDataSwap[_pAddress][_blockProposedAt].mAddress,
+			proposedDataSwap[_pAddress][_blockProposedAt].mContract,
+			proposedDataSwap[_pAddress][_blockProposedAt].data
+		);
+		return true;
+	}
 
 	function validateTokenSwapProposal(
 		address _pAddress,

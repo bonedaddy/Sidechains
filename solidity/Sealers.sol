@@ -20,8 +20,10 @@ contract Sealers {
 
 	enum SealerStates { pending, active, disabled }
 
-	address[]	public sealerAddresses;
+	address[]	public 	sealerAddresses;
 	uint256		public	sealerCount = 1;
+	// 60% in eth
+	uint256		public	minQuorumPercent = 0.6 ether;
 
 	struct SealerStruct {
 		bytes32 id;
@@ -67,6 +69,16 @@ contract Sealers {
 		sealerAddresses.push(_sealerAddress);
 		SealerForged(_sealerAddress, id);
 		return true;
+	}
+
+	function calculateRequiredVotes()
+		public
+		view
+		returns (uint256)
+	{
+		uint256 mulSealercount = sealerCount.mul(1 ether);
+		uint256 mulRequiredVotes = mulSealercount.mul(minQuorumPercent);
+		return mulRequiredVotes.div(1 ether);
 	}
 
 }
