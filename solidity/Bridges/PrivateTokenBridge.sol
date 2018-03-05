@@ -1,10 +1,10 @@
 pragma solidity 0.4.20;
 
-import "./Math/SafeMath.sol";
-import "./Sealers.sol";
-import "./Interfaces/ERC20Interface.sol";
-import "./Interfaces/SealersInterface.sol";
-import "./Interfaces/FactoryInterface.sol";
+import "blah/Math/SafeMath.sol";
+import "blah/Sealers.sol";
+import "blah/Interfaces/ERC20Interface.sol";
+import "blah/Interfaces/SealersInterface.sol";
+import "blah/Interfaces/FactoryInterface.sol";
 
 /** proposal validation hash 
 	bytes32 _prefix = keccak256(msg.sender, pAddress, depositValue, blockProposed);

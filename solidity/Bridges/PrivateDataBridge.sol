@@ -1,8 +1,8 @@
 pragma solidity 0.4.20;
 
-import "./Math/SafeMath.sol";
-import "./Interfaces/SealersInterface.sol";
-import "./Interfaces/FactoryInterface.sol";
+import "blah/Math/SafeMath.sol";
+import "blah/Interfaces/SealersInterface.sol";
+import "blah/Interfaces/FactoryInterface.sol";
 
 
 

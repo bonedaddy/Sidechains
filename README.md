@@ -33,3 +33,24 @@ The relay will then construct a transaction, and submit it to the payload accumu
 
 After a relay has sent a transaction to the payload accumulator, an event will be sent out, notifying all relayers, upon which they will download the original versin of the data payload which was uploaded to IFPS, and pin it locally for persistent storage.
 
+
+### Architecture: Data Payload Ipfs Files
+
+To allow anyone to verify the payload of the fle, a record will be published to IPFS as a file with the following format:
+
+mAddress: 	....
+mContract:	....
+payload:	....
+
+
+- "mAddress" is the address which has deposited funds into the payload collector contract to pay for the payload transfer (aka function execution)
+- "mContract" is the target contract to which the payload is to be delivered
+- "payload" is the data payload to be sent the contract to trigger a function call
+
+
+# How To
+
+```
+compiles
+solc blah="." Bridges/PrivateDataBridge.sol
+```
