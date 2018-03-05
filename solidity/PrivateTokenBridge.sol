@@ -30,7 +30,7 @@ contract TokenBridge {
 		bool	approved;
 	}
 
-	mapping (address => mapping (uint256 => SwapProposal)) 	private proposedTokenSwaps;
+	mapping (address => mapping (uint256 => SwapProposal)) 	public proposedTokenSwaps;
 	/**
 		When this is fired, a sealer wll be taksed with validating the proposal
 	*/
@@ -108,7 +108,7 @@ contract TokenBridge {
 		proposedTokenSwaps[msg.sender][block.number].mRecipient = _recipient;
 		proposedTokenSwaps[msg.sender][block.number].token = _tokenContract;
 		proposedTokenSwaps[msg.sender][block.number].deposit = _deposit;
-		SwapProposed(msg.sender, _mainNetAddress, _recipient, _tokenContract, block.number, _deposit);
+		SwapProposed(msg.sender, _mainNetAddress, _recipient, _tokenContract, _deposit, block.number);
 		return true;
 	}
 
