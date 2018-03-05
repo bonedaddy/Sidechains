@@ -16,7 +16,7 @@ contract Sealers {
 		way of allowing a distributed method of submitting transactions to the main network. This will
 		be refined as time goes on.
  	*/
-	address constant public singularity = address(0);
+	address constant public singularity = 0xC3D2aA21caa190AEE4F70F8359d96F6d3c5dAD9C;
 
 	enum SealerStates { pending, active, disabled }
 
@@ -41,15 +41,10 @@ contract Sealers {
 		_;
 	}
 
-	modifier onlySealers() {
-		require(sealers[msg.sender].state == SealerStates.active);
-		_;
-	}
-
 	function Sealers() {
-		sealers[msg.sender].id = keccak256(uint8(1));
-		sealers[msg.sender].forgedDate = now;
-		sealers[msg.sender].state = SealerStates.active;
+		sealers[0xC3D2aA21caa190AEE4F70F8359d96F6d3c5dAD9C].id = keccak256(uint8(1));
+		sealers[0xC3D2aA21caa190AEE4F70F8359d96F6d3c5dAD9C].forgedDate = now;
+		sealers[0xC3D2aA21caa190AEE4F70F8359d96F6d3c5dAD9C].state = SealerStates.active;
 	}
 
 	/*
@@ -79,6 +74,19 @@ contract Sealers {
 		uint256 mulSealercount = sealerCount.mul(1 ether);
 		uint256 mulRequiredVotes = mulSealercount.mul(minQuorumPercent);
 		return mulRequiredVotes.div(1 ether);
+	}
+
+	function checkIfSealerEnabled(
+		address _sealerAddress)
+		public
+		view
+		returns (bool)
+	{
+		if (sealers[_sealerAddress].state == SealerStates.active) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }

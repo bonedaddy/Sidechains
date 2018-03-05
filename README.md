@@ -10,8 +10,9 @@ The actual work is done in a private repository I maintain, which is periodicall
 
 The overall architecture follows a "relay" principle, in which anyone who has locked up the appropriate amount of mainnet ethereum as a stake, and incentivization method to help deter malicious actors, act as relays. Relays are used to relay data between the mainnet and private networks. Data from here on out can either refer to tokens, tokenized assets, or data payloads. Data payloads is the "data" included in `msg.data` when transactions are made to contracts. The goal behind this is to allow the execution of mainnet contract functions from the private network, or the execution of private network contract functions from the mainnet.
 
-The Architecture section will be broken up into two parts, one part detailing the relaying of tokens, and other similar assets. The second part will deal with the reelaying of data payloads
+The Architecture section will be broken up into two parts, one part detailing the relaying of tokens, and other similar assets. The second part will deal with the reelaying of data payloads. 
 
+There will be two relays, one for data payloads, and one for token/asset swaps.
 
 PChains utilize the following software suites, protocols, technologies, etc:
 - IPFS
@@ -33,4 +34,3 @@ There will be a contract on the private network, which users can use to send dat
 The relay will then construct a transaction, and submit it to the payload accumulator on the mainnet. The data payload will be held in the accumulator an time `T`. Until time `T` has passed, *anyone* may submit a fraud proof to the accumulator, proving that the data paylaod passed on by the relayer, was fradulent. To mitigate spam attacks, and abuse, a temporary deposit will be made. If the fraud proof attempt was invalid, the deposit will be distributed to the various relayers. In such a situation in which malicious payload data was relayed, the node that relayed the data will be removed from the network as a node, and the ethereum that was staked to become a relayer will be awarded to the submitter of the fraud proof, along with the submitters temporary deposit.
 
 After a relay has sent a transaction to the payload accumulator, an event will be sent out, notifying all relayers, upon which they will download the original versin of the data payload which was uploaded to IFPS, and pin it locally for persistent storage.
-
