@@ -30,7 +30,8 @@ contract DataBridge {
 		address _pAddress,
 		address _mAddress,
 		address _mContract,
-		bytes   _payload);
+		bytes   _payload,
+		uint256 _blockProposedAt);
 
 	event DataSwapApproved(
 		address _mAddress,
@@ -89,8 +90,8 @@ contract DataBridge {
 		dataSwapProposals[msg.sender][block.number].mContract = _mContract;
 		dataSwapProposals[msg.sender][block.number].payload = _payload;
 		dataSwapProposals[msg.sender][block.number].state = defaultState;
-		DataSwapProposed(msg.sender, _mContract, _mContract, _payload);
+		DataSwapProposed(msg.sender, _mContract, _mContract, _payload, block.number);
 		return true;
 	}
-	
+
 }
