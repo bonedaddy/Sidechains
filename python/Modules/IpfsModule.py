@@ -8,7 +8,7 @@ class Ipfs():
 		self.hashes = {}
 
 	# stores an api handler in mem
-	def connect(self, api):
+	def connect(self):
 		self.api = ipfsapi.connect(
 			self.ip, self.port)
 

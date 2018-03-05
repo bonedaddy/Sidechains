@@ -1,11 +1,11 @@
-private:
-  bridgeAddress: '0x123'
-  bridgeAbi: '0x1245'
-  adminAddress: '0x124' # thsi is the address of the designated bridge admin 
-  adminPassword: '1234'
-  connectionMethod: 'rpc'
+private: # poa network
+  tokenBridgeAddress: '.....'
+  tokenBridgeAbi: '.....'
+  sealerAddress: '.....'
+  sealerPassword: '.....'
+  connectionMethod: 'ipc'
   rpcUrl: 'http://127.0.0.1:8545'
-  ipcPath: '/home/soliidty/.ethereum/privategeth.ipc'
+  ipcPath: 'geth.ipc'
 main:
   bridgeAddress: '0x123'
   bridgeAbi: '0x1245'
@@ -13,7 +13,7 @@ main:
   adminPassword: '1234'
   connectionMethod: 'rpc'
   rpcUrl: 'http://127.0.0.1:8546'
-  ipcPath: '/home/soliidty/.ethereum/geth.ipc'
+  ipcPath: '/tmp/geth.ipc'
 testToken:
   network: 'private'
   address: '0x123'
@@ -26,3 +26,4 @@ mainToken:
   abiPath: 'abi/mainToken.abi'
   accuont: '0x1234'
   accountPassword: '1234'
+
