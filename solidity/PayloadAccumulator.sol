@@ -2,65 +2,91 @@ pragma solidity 0.4.20;
 
 import "./Modules/Administration.sol";
 import "./Math/SafeMath.sol";
+import "./Interfaces/RelayersInterface.sol";
 
 contract PayloadAccumulator is Administration {
 	using SafeMath for uint256;
 
-	SubmissionStates constant public DEFAULTSUBMISSIONSTATE = SubmissionStates.submitted;
+	PayloadStates constant public DEFAULTSTATE = PayloadStates.pending;
 
-	enum SubmissionStates { submitted, accepted, challenged, fraudulent }
+	RelayersInterface public relayerI;
 
-	struct SubmissionStruct {
-		address pAddress;
+	enum PayloadStates { pending, validated, executed }
+
+	struct PayloadStruct {
 		address mAddress;
-		address cAddress;
-		bytes 	payload;
-		uint256 blockSubmittedAt;
-		SubmissionStates state;
+		address mContract;
+		bytes	payload;
+		PayloadStates state;
 	}
 
-	mapping (bytes20 => SubmissionStruct) 	public submissions;
-	mapping (address => bool)				public relays;
+	mapping (address => mapping(uint256 => PayloadStruct)) public payloads;
 
-	modifier onlyRelay() {
-		require(relays[msg.sender]);
+	event PayloadSubmitted(address _mAddress, address _mContract, bytes _payload);
+	event PayloadValidated(address _mAddress, address _mContract, bytes _payload);
+	event PayloadExecuted(address _mAddress, address _mContract, bytes _payload);
+
+	modifier onlyRelays() {
+		require(relayerI.checkIfActiveRelay(msg.sender));
 		_;
 	}
 
-	function PayloadAccumulator() {
-		relays[msg.sender] = true;
+	modifier onlyOmega() {
+		require(msg.sender == relayerI.omega());
+		_;
 	}
 
-	function addRelay(
-		address _relayAddress)
-		public
-		onlyRelay
-		returns (bool)
-	{
-		relays[_relayAddress] = true;
-		return true;
+	modifier pendingPayload(address _mAddress, uint256 _blockSubmittedAt) {
+		require(payloads[_mAddress][_blockSubmittedAt].state == PayloadStates.pending);
+		_;
+	}
+
+	modifier validatedPayload(address _mAddress, uint256 _blockSubmittedAt) {
+		require(payloads[_mAddress][_blockSubmittedAt].state == PayloadStates.validated);
+		_;
 	}
 
 	function submitPayload(
-		address _pAddress,
 		address _mAddress,
-		address _cAddress,
+		address _mContract,
 		bytes 	_payload)
 		public
-		onlyRelay
+		onlyRelays
 		returns (bool)
 	{
-		require(_payload.length > 0);
-		bytes20 id = ripemd160(_payload, block.number);
-		submissions[id] = SubmissionStruct(
-			_pAddress,
-			_mAddress,
-			_cAddress,
-			_payload,
-			block.number,
-			DEFAULTSUBMISSIONSTATE);
+		payloads[_mAddress][block.number] = PayloadStruct(_mAddress, _mContract, _payload, DEFAULTSTATE);
+		PayloadSubmitted(_mAddress, _mContract, _payload);
 		return true;
 	}
 
+	function validatePayload(
+		address _mAddress,
+		uint256 _blockSubmittedAt)
+		public
+		onlyOmega
+		pendingPayload(_mAddress, _blockSubmittedAt)
+		returns (bool)
+	{
+		address mContract = payloads[_mAddress][_blockSubmittedAt].mContract;
+		bytes memory payload = payloads[_mAddress][_blockSubmittedAt].payload;
+		PayloadValidated(_mAddress, mContract, payload);
+		return true;
+	}
 
+	function executePayload(
+		address _mAddress,
+		uint256 _blockSubmittedAt)
+		public
+		onlyRelays
+		validatedPayload(_mAddress, _blockSubmittedAt)
+		returns (bool)
+	{
+		payloads[_mAddress][_blockSubmittedAt].state = PayloadStates.executed;
+		address mContract = payloads[_mAddress][_blockSubmittedAt].mContract;
+		bytes memory payload = payloads[_mAddress][_blockSubmittedAt].payload;
+		PayloadExecuted(_mAddress, mContract, payload);
+		require(mContract.call(payload));
+		return true;
+	}
+	
 }

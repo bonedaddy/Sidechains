@@ -59,4 +59,18 @@ contract Relayers {
 		return true;
 	}
 
+	function checkIfActiveRelay(
+		address _relayAddress)
+		public
+		view
+		returns (bool)
+	{
+		if (relayers[_relayAddress].state == RelayStates.active) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+
 }
