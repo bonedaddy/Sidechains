@@ -20,6 +20,13 @@ PChains utilize the following software suites, protocols, technologies, etc:
 - Solidity
 - web3
 - geth
+- whisper
+
+While inefficient, at first coordination will be done through smart contracts and web3 python programs. This will be abandon in the future for a more effective solution
+
+# Architecture - Current Limitations
+
+Single node relay
 
 ## Architecture: Data Paylods
 
