@@ -1,10 +1,44 @@
+from web3 import Web3, IPCProvider, HTTPProvider
+from web3.contract import ConciseContract
 import ipfsapi
+import json
 
-class Ipfs():
+class Listener():
 
-	def __init__(self, ipAddress, portNumber):
+	# if we're not using test rpc, connect via ipc
+	def establishIpcConnection(self, ipcPath):
+		self.w3 = Web3(IPCProvider(ipcPath))
+		
+	# if we're not using test rpc, connect via specified rpc url
+	def establishRpcConnection(self, rpcUrl):
+		self.w3 = Web3(HTTPProvider(rpcUrl))
+
+	# lets us manually load a contract on the given network, returning an instance ofi ts contract object
+	def manualLoadContract(self, contractAddress, contractAbi):
+		with open(contractAbi, 'r') as fh:
+			abi = json.load(fh)
+		return self.w3.eth.contract(contractAddress, abi=abi, ContractFactoryClass=ConciseContract)
+
+	# returns a particular  log filter instance for the particular event.
+	def returnEventHandler(self, eventName):
+		event_filter = self.contract.eventFilter(eventName)
+		return event_filter
+
+	# get new event entries, requires a valid event filter
+	def getNewEventEntries(self, eventFilter):
+		return eventFilter.get_new_entries()
+
+	# return an instance of the contract
+	def returnContractHandler(self):
+		return self.w3.contract
+
+class Ipfs(Listener):
+
+	def __init__(self, ipAddress, portNumber, peerRegistryContract, peerRegistryAbi):
 		self.ip = ipAddress
 		self.port = portNumber
+		self.peerRegistryContract = peerRegistryContract
+		self.peerRegistryAbi = peerRegistryAbi
 		self.hashes = {}
 
 	# stores an api handler in mem
@@ -15,6 +49,7 @@ class Ipfs():
 	def return_api_handler(self):
 		return self.api
 
+	# this needs to notify the network somehow that the file was added to ipfs, so the other nodes can pin it
 	def add_file(self, obj):
 		response = self.api.add(obj)
 		self.hashes[response['Name']] = response['Hash']
@@ -50,3 +85,33 @@ class Ipfs():
 	def pin_object_locally(self, hashName, fileName):
 		self.api.pin_add(hashName)
 		self.hashes[fileName] = hashName
+
+	#retrieve all peers hosting a single file
+	def dht_find_provs(self, hashName):
+		return self.api.dht_findprovs(hashName)
+
+
+	# perform garbage collection on non-pinned objects, returning the list of removed objects
+	def repo_garbage_collection(self):
+		removedObjs = self.api.repo_gc()
+		return removedObjs
+
+	# used to construct the necessary components to submit a peer struct
+	# to the contract
+	def construct_peer_struct(self, peerID):
+		id = self.api.id(peerID)
+		obj = {}
+		obj['id'] = id['ID']
+		obj['pk'] = id['PublicKey']
+		obj['av'] = id['AgentVersion']
+		obj['pv'] = id['ProtocolVersion']
+		return obj
+
+	def connect(self, path, Ipc: False):
+		if Ipc == False:
+			super.establishRpcConnection(path)
+		else:
+			super.establishIpcConnection(path)
+
+	def loadPeerRegistry(self):
+		super.manualLoadContract(self.peerRegistryContract, self.peerRegistryAbi)

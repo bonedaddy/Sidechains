@@ -1,5 +1,5 @@
 from time import sleep
-from Modules import listener
+from Modules import Bridge
 from Modules import IpfsModule
 from web3 import Web3
 import datetime
@@ -32,7 +32,7 @@ elif pConnectionMethod == 'ipc':
 
 
 # lets create a connection object ot the private networl
-pNet = listener.Listener(pSealerAddress, pSealerPassword, pDataBridgeAddress, pDataBridgeAbiFile)
+pNet = Bridge.Listener(pSealerAddress, pSealerPassword, pDataBridgeAddress, pDataBridgeAbiFile)
 
 
 if pConnectionMethod == 'rpc':
@@ -49,22 +49,6 @@ pNet.unlockAccount()
 # load the bridge contract object
 pNet.loadContract()
 
-
-"""
-	event DataSwapApproved(
-		address _mAddress,
-		address _mContract,
-		bytes   _payload);
-
-How to decode the payload data 
-Web3.toHex(Web3.toBytes(payload))
-
-ipfs file:
-mAddress: 	....
-mContract:	....
-payload:	....
-
-"""
 eventName = 'DataSwapApproved'
 # lets return an  event filter
 eventFilter = pNet.returnEventHandler(eventName)
@@ -100,6 +84,8 @@ while True:
 			with open('/tmp/%s' % fileName, 'rb') as fh:
 				ipfs.add_file(fh)
 				print(ipfs.hashes)
+				with open('~/ipfs_files.txt', 'a') as fh:
+					fh.write('%s\n' % ipfs.hashes)
 			exit()
 	#print(swapObjects)
 	#print(swapObjectList)

@@ -1,5 +1,5 @@
 from time import sleep
-from Modules import listener
+from Modules import Bridge
 import json
 import yaml
 
@@ -22,8 +22,7 @@ elif pConnectionMethod == 'ipc':
 
 
 # lets create a connection object ot the private networl
-pNet = listener.Listener(pSealerAddress, pSealerPassword, pTokenBridgeAddress, pTokenBridgeAbiFile)
-
+pNet = Bridge.Listener(pSealerAddress, pSealerPassword, pTokenBridgeAddress, pTokenBridgeAbiFile)
 
 if pConnectionMethod == 'rpc':
 	# connect to the network
