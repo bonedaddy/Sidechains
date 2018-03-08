@@ -5,6 +5,9 @@ import json
 
 class Listener():
 
+	def __init__(self):
+		self.initialized = True
+
 	# if we're not using test rpc, connect via ipc
 	def establishIpcConnection(self, ipcPath):
 		self.w3 = Web3(IPCProvider(ipcPath))
@@ -17,7 +20,7 @@ class Listener():
 	def manualLoadContract(self, contractAddress, contractAbi):
 		with open(contractAbi, 'r') as fh:
 			abi = json.load(fh)
-		return self.w3.eth.contract(contractAddress, abi=abi, ContractFactoryClass=ConciseContract)
+		return self.w3.eth.contract(contractAddress, abi=abi)
 
 	# returns a particular  log filter instance for the particular event.
 	def returnEventHandler(self, eventName):
@@ -34,7 +37,7 @@ class Listener():
 
 class Ipfs(Listener):
 
-	def __init__(self, ipAddress, portNumber, peerRegistryContract, peerRegistryAbi):
+	def __init__(self, ipAddress, portNumber, peerRegistryContract='0x', peerRegistryAbi='0x'):
 		self.ip = ipAddress
 		self.port = portNumber
 		self.peerRegistryContract = peerRegistryContract
@@ -42,7 +45,7 @@ class Ipfs(Listener):
 		self.hashes = {}
 
 	# stores an api handler in mem
-	def connect(self):
+	def connect_to_ipfs(self):
 		self.api = ipfsapi.connect(
 			self.ip, self.port)
 
@@ -90,6 +93,8 @@ class Ipfs(Listener):
 	def dht_find_provs(self, hashName):
 		return self.api.dht_findprovs(hashName)
 
+	def get_id_object(self):
+		return self.api.id()
 
 	# perform garbage collection on non-pinned objects, returning the list of removed objects
 	def repo_garbage_collection(self):
@@ -109,9 +114,11 @@ class Ipfs(Listener):
 
 	def connect(self, path, Ipc: False):
 		if Ipc == False:
-			super.establishRpcConnection(path)
+			super().establishRpcConnection(path)
 		else:
-			super.establishIpcConnection(path)
+			super().establishIpcConnection(path)
 
-	def loadPeerRegistry(self):
-		super.manualLoadContract(self.peerRegistryContract, self.peerRegistryAbi)
+	def loadPeerRegistryContract(self):
+		assert self.peerRegistryAbi != '0x' and self.peerRegistryContract != '0x'
+		self.contract = super().manualLoadContract(self.peerRegistryContract, self.peerRegistryAbi)
+		return self.contract
