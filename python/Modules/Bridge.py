@@ -46,4 +46,4 @@ class Listener():
 
 	# return an instance of the contract
 	def returnContractHandler(self):
-		return self.w3.contract
+		return self.contract

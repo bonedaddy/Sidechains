@@ -21,7 +21,7 @@ else:
 	port = 5001
 	peerRegistryContractAddress = Web3.toChecksumAddress("0x7B8fC2C025b9a50E45D514c6e7Cc14749e55fBd8")
 	peerRegistryContractAbiPath = "abi/PeerRegistry.abi"
-	ipcPath = "geth.ipc"
+	ipcPath = "http://127.0.0.1:8501"
 
 print("loading ipfs module")
 
@@ -45,7 +45,7 @@ except Exception as e:
 print("Connecting to ethereum network with ipc")
 
 try:
-	ipfs.connect("ipcPath", True)
+	ipfs.connect(ipcPath, False)
 	print("Connection to ethereum network successful")
 except Exception as e:
 	print("error connecting to ethereum network")
@@ -62,4 +62,6 @@ except Exception as e:
 	print(e)
 	exit()
 
-print("Number of peers", peerRegistryContract.call.numPeers())
+
+print("peer list", ipfs.fetchPeerIds())
+print("Peer struct at key 1", ipfs.fetchPeerStructAtKey(1))

@@ -1,72 +1,57 @@
 pragma solidity 0.4.20;
 
-/**
-    This contract is intended to function the administration module for PoA sealers.
-    Any contract that is used by sealers will inherit this contract
-
-*/
-
 contract Administration {
 
-    // setting to private slightly decreases gas
-    address private deployer;
+    address public owner;
+    address public admin;
+    bool    public frozen;
 
+    mapping (address => bool) public moderators;
 
-    mapping (address => bool) private _sealers;
+    event AdminSet(address indexed _admin, bool indexed _adminSet);
+    event OwnershipTransferred(address indexed _previousOwner, address indexed _newOwner, bool indexed _ownershipTransferred);
 
-    modifier nonRegisteredSealer(address _sealer) {
-        require(!_sealers[_sealer]);
+    modifier onlyOwner() {
+        require(msg.sender == owner);
         _;
     }
 
-    modifier registeredSealer(address _sealer) {
-        require(_sealers[_sealer]);
+    modifier onlyAdmin() {
+        require(msg.sender == owner || msg.sender == admin);
         _;
     }
 
-    modifier onlySealers() {
-        require(_sealers[msg.sender]);
-        _;
-    }
-
-    modifier onlyDeployer() {
-        require(msg.sender == deployer);
+    modifier onlyPrivileged() {
+        require(msg.sender == owner || msg.sender == admin || moderators[msg.sender] == true);
         _;
     }
 
     function Administration() {
-        deployer = msg.sender;
+        owner = msg.sender;
+        admin = msg.sender;
     }
 
-    function addSealer(
-        address _sealerAddress)
+    function setAdmin(
+        address _newAdmin
+    )
         public
-        onlyDeployer
-        nonRegisteredSealer(_sealerAddress)
+        onlyOwner
         returns (bool)
     {
-        _sealers[_sealerAddress] = true;
-        return true;
+        require(_newAdmin != admin);
+        admin = _newAdmin;
+        AdminSet(_newAdmin, true);
     }
 
-    function removeSealer(
-        address _sealerAddress)
+    function transferOwnership(
+        address _newOwner
+    )
         public
-        onlyDeployer
-        registeredSealer(_sealerAddress)
+        onlyOwner
         returns (bool)
     {
-        _sealers[_sealerAddress] = false;
-        return true;
+        require(_newOwner != owner);
+        owner = _newOwner;
+        OwnershipTransferred(msg.sender, _newOwner, true);
     }
-
-    function getSealerStatus(
-        address _sealerAddress)
-        public
-        view
-        returns (bool)
-    {
-        return _sealers[_sealerAddress];
-    }
-
 }

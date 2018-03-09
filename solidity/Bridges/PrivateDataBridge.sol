@@ -7,9 +7,11 @@ import "blah/Interfaces/FactoryInterface.sol";
 
 
 contract DataBridge {
+	
 	using SafeMath for uint256;
 
 	SealersInterface private sealerI;
+
 	ProposalStates private defaultState = ProposalStates.proposed;
 
 	enum ProposalStates { proposed, active, disabled }

@@ -1,10 +1,22 @@
 from time import sleep
 from Modules import Bridge
 from Modules import IpfsModule
-from web3 import Web3
+from web3 import Web3,IPCProvider
 import datetime
 import json
 import yaml
+
+from web3.middleware.pythonic import (
+    pythonic_middleware,
+    to_hexbytes,
+)
+
+size_extraData_for_poa = 200   # can change
+
+web3 = Web3(IPCProvider('/home/solidity/.ethereum/geth.ipc'))
+pythonic_middleware.__closure__[2].cell_contents['eth_getBlockByNumber'].args[1].args[0]['extraData'] = to_hexbytes(size_extraData_for_poa, variable_length=True)
+pythonic_middleware.__closure__[2].cell_contents['eth_getBlockByHash'].args[1].args[0]['extraData'] = to_hexbytes(size_extraData_for_poa, variable_length=True)
+
 
 # lets load the configuration file
 configFile = 'configs/settings_test.yml'
@@ -22,8 +34,7 @@ ipfsIp = cfg['ipfs']['ip']
 ipfsPort = cfg['ipfs']['port']
 
 ipfs = IpfsModule.Ipfs(ipfsIp, ipfsPort)
-ipfs.connect()
-
+ipfs.connect_to_ipfs()
 
 if pConnectionMethod == 'rpc':
 	pConnectionPath = cfg['private']['rpcUrl']
@@ -49,7 +60,11 @@ pNet.unlockAccount()
 # load the bridge contract object
 pNet.loadContract()
 
-eventName = 'DataSwapApproved'
+pNet.loadContract()
+
+contract = pNet.returnContractHandler()
+
+eventName = 'DataSwapProposed'
 # lets return an  event filter
 eventFilter = pNet.returnEventHandler(eventName)
 
@@ -84,9 +99,10 @@ while True:
 			with open('/tmp/%s' % fileName, 'rb') as fh:
 				ipfs.add_file(fh)
 				print(ipfs.hashes)
-				with open('~/ipfs_files.txt', 'a') as fh:
+				with open('/tmp/ipfs_files.txt', 'a') as fh:
 					fh.write('%s\n' % ipfs.hashes)
-			exit()
+			contract.functions.validateDataSwap(Web3.toChecksumAddress(swap['pAddress']), swap['blockProposedAt']).transact({'from': pSealerAddress})
+		exit()
 	#print(swapObjects)
 	#print(swapObjectList)
 	sleep(5)

@@ -122,3 +122,16 @@ class Ipfs(Listener):
 		assert self.peerRegistryAbi != '0x' and self.peerRegistryContract != '0x'
 		self.contract = super().manualLoadContract(self.peerRegistryContract, self.peerRegistryAbi)
 		return self.contract
+
+	def fetchPeerIds(self):
+		assert self.peerRegistryAbi != '0x' and self.peerRegistryContract != '0x'
+		numPeers = self.contract.call().numPeers()
+		peerIds = {}
+		for i in range(1, numPeers + 1):
+			peerIds[i] = self.contract.call().fetchPeerIdForPeerNumber(i)
+		return peerIds
+
+	def fetchPeerStructAtKey(self, key):
+		assert self.peerRegistryAbi != '0x' and self.peerRegistryContract != '0x'
+		return self.contract.call().fetchPeerStructAtKey(key)
+
