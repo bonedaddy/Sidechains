@@ -1,4 +1,4 @@
-pragma solidity 0.4.20;
+pragma solidity 0.4.21;
 
 contract Relayers {
 
@@ -43,7 +43,7 @@ contract Relayers {
 		relayers[_relayAddress].relayAddress = _relayAddress;
 		relayers[_relayAddress].id = keccak256(_relayAddress, block.number);
 		relayers[_relayAddress].state = DEFAULTSTATE;
-		RelayAdded(_relayAddress, relayers[_relayAddress].id);
+		emit RelayAdded(_relayAddress, relayers[_relayAddress].id);
 		return true;
 	}
 
@@ -55,7 +55,7 @@ contract Relayers {
 		returns (bool)
 	{
 		relayers[_relayAddress].state = RelayStates.active;
-		RelayActivated(_relayAddress);
+		emit RelayActivated(_relayAddress);
 		return true;
 	}
 

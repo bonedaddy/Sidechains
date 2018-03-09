@@ -102,9 +102,11 @@ while True:
 				with open('/tmp/ipfs_files.txt', 'a') as fh:
 					fh.write('%s\n' % ipfs.hashes)
 			contract.functions.validateDataSwap(Web3.toChecksumAddress(swap['pAddress']), swap['blockProposedAt']).transact({'from': pSealerAddress})
-		exit()
 	#print(swapObjects)
 	#print(swapObjectList)
+	events = []
+	swapObjectList = []
+	swapObjects = {}
 	sleep(5)
 """
 AttributeDict({'_mAddress': '0xabB36c583E9B15736038858bDd540f7f422Db0F8', '_recipient': '0x365b3b4d3168a11291449A015FA0C1b34B0B3d72', '_token': '0x28605Eacf39C906b5331C4C81b9BC3c07F3eF606', '_amount': 9999999999999999999})

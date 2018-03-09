@@ -1,4 +1,4 @@
-pragma solidity 0.4.20;
+pragma solidity 0.4.21;
 
 interface RelayersInterface {
 	function omega() external view returns (address);

@@ -1,4 +1,4 @@
-pragma solidity 0.4.20;
+pragma solidity 0.4.21;
 
 import "blah/Math/SafeMath.sol";
 import "blah/Interfaces/SealersInterface.sol";
@@ -71,7 +71,7 @@ contract DataBridge {
 		address mAddress = dataSwapProposals[_pAddress][_blockProposedAt].mAddress;
 		address mContract = dataSwapProposals[_pAddress][_blockProposedAt].mContract;
 		bytes memory payload = dataSwapProposals[_pAddress][_blockProposedAt].payload;
-		DataSwapApproved(mAddress, mContract, payload);
+		emit DataSwapApproved(mAddress, mContract, payload);
 		return true;
 	}
 
@@ -92,7 +92,7 @@ contract DataBridge {
 		dataSwapProposals[msg.sender][block.number].mContract = _mContract;
 		dataSwapProposals[msg.sender][block.number].payload = _payload;
 		dataSwapProposals[msg.sender][block.number].state = defaultState;
-		DataSwapProposed(msg.sender, _mContract, _mContract, _payload, block.number);
+		emit DataSwapProposed(msg.sender, _mContract, _mContract, _payload, block.number);
 		return true;
 	}
 

@@ -1,4 +1,4 @@
-pragma solidity 0.4.20;
+pragma solidity 0.4.21;
 
 import "blah/Math/SafeMath.sol";
 import "blah/Sealers.sol";
@@ -87,7 +87,7 @@ contract TokenBridge {
 		address token = proposedTokenSwaps[_pAddress][_blockProposedAt].token;
 		uint256 value = proposedTokenSwaps[_pAddress][_blockProposedAt].deposit;
 		proposedTokenSwaps[_pAddress][_blockProposedAt].approved = true;
-		SwapApproved(mAddress, mRecipient, token, value);
+		emit SwapApproved(mAddress, mRecipient, token, value);
 		return true;
 	}
 
@@ -108,7 +108,7 @@ contract TokenBridge {
 		proposedTokenSwaps[msg.sender][block.number].mRecipient = _recipient;
 		proposedTokenSwaps[msg.sender][block.number].token = _tokenContract;
 		proposedTokenSwaps[msg.sender][block.number].deposit = _deposit;
-		SwapProposed(msg.sender, _mainNetAddress, _recipient, _tokenContract, _deposit, block.number);
+		emit SwapProposed(msg.sender, _mainNetAddress, _recipient, _tokenContract, _deposit, block.number);
 		return true;
 	}
 

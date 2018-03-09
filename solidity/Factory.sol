@@ -1,4 +1,4 @@
-pragma solidity 0.4.20;
+pragma solidity 0.4.21;
 
 /*
 
@@ -25,7 +25,7 @@ contract Factory {
 		assembly {
 			a := create(0, add(_code, 0x20), mload(_code))
 		}
-		NewContract(a);
+		emit NewContract(a);
 		ptbridges.push(a);
 		tbridge = a;
 	}
@@ -36,7 +36,7 @@ contract Factory {
 		assembly {
 			a := create(0, add(_code, 0x20), mload(_code))
 		}
-		NewContract(a);
+		emit NewContract(a);
 		sealers.push(a);
 		sealer = a;
 	}
@@ -47,7 +47,7 @@ contract Factory {
 		assembly {
 			a := create(0, add(_code, 0x20), mload(_code))
 		}
-		NewContract(a);
+		emit NewContract(a);
 		dbridges.push(a);
 		dbridge = a;
 	}

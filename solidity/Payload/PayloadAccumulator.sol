@@ -1,92 +1,91 @@
-pragma solidity 0.4.20;
+pragma solidity 0.4.21;
 
 import "./Modules/Administration.sol";
 import "./Math/SafeMath.sol";
 import "./Interfaces/RelayersInterface.sol";
-
+/*
+payload format:
+	mAddress (address which has paid the service fee, and execution costs)
+	mContract (contract to which the data payload will be sent)
+	payload (the actualy data payload)
+	ipfsHash (copy of the payload contents, and transaction information which has been stored on ipfs)
+*/
 contract PayloadAccumulator is Administration {
+	
 	using SafeMath for uint256;
 
-	PayloadStates constant public DEFAULTSTATE = PayloadStates.pending;
+	RelayersInterface public relayersI;
 
-	RelayersInterface public relayerI;
+	enum UserStates { pending, active, disabled }
+	enum SubmissionStates { pending, approved, spent }
+	enum ContractStates { pending, active, disabled }
 
-	enum PayloadStates { pending, validated, executed }
-
-	struct PayloadStruct {
+	struct PayloadSubmissionStruct {
 		address mAddress;
 		address mContract;
-		bytes	payload;
-		PayloadStates state;
+		bytes 	payload;
+		string  fileHash;
+		SubmissionStates state;
 	}
 
-	mapping (address => mapping(uint256 => PayloadStruct)) public payloads;
-
-	event PayloadSubmitted(address _mAddress, address _mContract, bytes _payload);
-	event PayloadValidated(address _mAddress, address _mContract, bytes _payload);
-	event PayloadExecuted(address _mAddress, address _mContract, bytes _payload);
-
-	modifier onlyRelays() {
-		require(relayerI.checkIfActiveRelay(msg.sender));
-		_;
+	struct UserStruct {
+		address mAddress;
+		uint256 balance;
+		uint256 numSubmissions;
+		UserStates state;
 	}
 
-	modifier onlyOmega() {
-		require(msg.sender == relayerI.omega());
-		_;
+	struct ContractStruct {
+		address contractAddress;
+		bytes4[] functionSignatures;
+		ContractStates state;
 	}
 
-	modifier pendingPayload(address _mAddress, uint256 _blockSubmittedAt) {
-		require(payloads[_mAddress][_blockSubmittedAt].state == PayloadStates.pending);
-		_;
-	}
+	mapping (address => UserStruct) public users;
+	mapping (address => ContractStruct) private contracts;
+	mapping (address => bool) private listedContracts;
 
-	modifier validatedPayload(address _mAddress, uint256 _blockSubmittedAt) {
-		require(payloads[_mAddress][_blockSubmittedAt].state == PayloadStates.validated);
-		_;
-	}
-
-	function submitPayload(
-		address _mAddress,
-		address _mContract,
-		bytes 	_payload)
-		public
-		onlyRelays
-		returns (bool)
-	{
-		payloads[_mAddress][block.number] = PayloadStruct(_mAddress, _mContract, _payload, DEFAULTSTATE);
-		PayloadSubmitted(_mAddress, _mContract, _payload);
-		return true;
-	}
-
-	function validatePayload(
-		address _mAddress,
-		uint256 _blockSubmittedAt)
-		public
-		onlyOmega
-		pendingPayload(_mAddress, _blockSubmittedAt)
-		returns (bool)
-	{
-		address mContract = payloads[_mAddress][_blockSubmittedAt].mContract;
-		bytes memory payload = payloads[_mAddress][_blockSubmittedAt].payload;
-		PayloadValidated(_mAddress, mContract, payload);
-		return true;
-	}
-
-	function executePayload(
-		address _mAddress,
-		uint256 _blockSubmittedAt)
-		public
-		onlyRelays
-		validatedPayload(_mAddress, _blockSubmittedAt)
-		returns (bool)
-	{
-		payloads[_mAddress][_blockSubmittedAt].state = PayloadStates.executed;
-		address mContract = payloads[_mAddress][_blockSubmittedAt].mContract;
-		bytes memory payload = payloads[_mAddress][_blockSubmittedAt].payload;
-		PayloadExecuted(_mAddress, mContract, payload);
-		require(mContract.call(payload));
-		return true;
-	}
+	event ContractSubmitted(address _contractAddress, bytes4[] _functionSignatures);
+	event ContractApproved(address _contractAddress);
 	
-}
+	modifier activeRelayer(address _addr) {
+		require(relayersI.checkIfActiveRelay(_addr));
+		_;
+	}
+
+	modifier pendingContract(address _contractAddress) {
+		require(contracts[_contractAddress].state == ContractStates.pending);
+		_;
+	}
+
+	modifier nonListedContract(address _contractAddress) {
+		require(!listedContracts[_contractAddress]);
+		_;
+	}
+
+	function addContract(
+		address  _contractAddress,
+		bytes4[] _functionSignatures)
+		public
+		nonRegisteredContract(_contractAddress)
+		returns (bool)
+	{
+		contracts[_contractAddress] = ContractStruct(_contractAddress, _functionSignatures, ContractStates.pending);
+		listedContracts[_contractAddress] = true;
+		emit ContractSubmitted(_contractAddress, _functionSignatures);
+		return true;
+	}
+
+	function approveContract(
+		address _contractAddress)
+		public
+		activeRelayer(msg.sender)
+		pendingContract(_contractAddress)
+		returns (bool)
+	{
+		contracts[_contractAddress].state = ContractStates.approved;
+		emit ContractApproved(_contractAddress);
+		return true;
+	}
+
+}	

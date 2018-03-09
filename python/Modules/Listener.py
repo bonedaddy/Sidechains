@@ -1,5 +1,6 @@
 from web3 import Web3, IPCProvider, HTTPProvider
 from web3.contract import ConciseContract
+import json
 
 # lightweight library used to establish a listen (read-only) connection to a contract to fetch events.
 # We use the ConciseContract factory method since we are only performing read actions
@@ -22,7 +23,7 @@ class Listener():
 
 	# loads the listener contract (bridge contract)
 	def loadContract(self):
-		self.contract = self.w3.eth.contract(self.listenerContract, abi=self.listenerContractAbi, ContractFactoryClass=ConciseContract)
+		self.contract = self.w3.eth.contract(self.listenerContract, abi=self.listenerContractAbi)
 
 	# lets us manually load a contract on the given network, returning an instance ofi ts contract object
 	def manualLoadContract(self, contractAddress, contractAbi):

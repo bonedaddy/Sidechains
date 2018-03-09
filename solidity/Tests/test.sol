@@ -1,4 +1,4 @@
-pragma solidity 0.4.20;
+pragma solidity 0.4.21;
 
 
 contract BridgeTest {
@@ -12,7 +12,7 @@ contract BridgeTest {
 		public
 		returns (bool)
 	{
-		Test(msg.sender);
+		emit Test(msg.sender);
 		return true;
 	}
 }

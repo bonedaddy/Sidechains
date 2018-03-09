@@ -1,4 +1,4 @@
-pragma solidity 0.4.20;
+pragma solidity 0.4.21;
 
 import "blah/Math/SafeMath.sol";
 import "blah/Modules/Administration.sol";
@@ -60,7 +60,7 @@ contract PeerRegistry is Administration {
 	{
 		numPeers = numPeers.add(1);
 		peers[numPeers] = PeerStruct(_id, _av, _pv, _pk);
-		PeerRegistered(_id, _av, _pv, _pk, numPeers);
+		emit PeerRegistered(_id, _av, _pv, _pk, numPeers);
 		return true;
 	}
 
