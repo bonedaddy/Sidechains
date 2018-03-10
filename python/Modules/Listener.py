@@ -20,6 +20,8 @@ class Listener():
 	def establishRpcConnection(self, rpcUrl):
 		self.w3 = Web3(HTTPProvider(rpcUrl))
 	
+	def authenticate(self, account, password):
+		self.w3.personal.unlockAccount(account, password, 0)
 
 	# loads the listener contract (bridge contract)
 	def loadContract(self):
@@ -40,4 +42,4 @@ class Listener():
 
 	# return an instance of the contract
 	def returnContractHandler(self):
-		return self.w3.contract
+		return self.contract
