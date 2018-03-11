@@ -21,6 +21,7 @@ contract DataBridge {
 		address mAddress;
 		address mContract;
 		bytes 	payload;
+		bytes32 keccak_fileHash;
 		ProposalStates state;
 	}
 
@@ -38,7 +39,8 @@ contract DataBridge {
 	event DataSwapApproved(
 		address _mAddress,
 		address _mContract,
-		bytes   _payload);
+		bytes   _payload,
+		string  _fileHash);
 
 	modifier onlySealers() {
 		require(sealerI.checkIfSealerEnabled(msg.sender));
@@ -62,16 +64,18 @@ contract DataBridge {
 
 	function validateDataSwap(
 		address _pAddress,
-		uint256 _blockProposedAt)
+		uint256 _blockProposedAt,
+		string  _fileHash)
 		public
 		onlySealers
 		returns (bool)
 	{
 		dataSwapProposals[_pAddress][_blockProposedAt].state == ProposalStates.active;
+		dataSwapProposals[_pAddress][_blockProposedAt].keccak_fileHash = keccak256(_fileHash);
 		address mAddress = dataSwapProposals[_pAddress][_blockProposedAt].mAddress;
 		address mContract = dataSwapProposals[_pAddress][_blockProposedAt].mContract;
 		bytes memory payload = dataSwapProposals[_pAddress][_blockProposedAt].payload;
-		emit DataSwapApproved(mAddress, mContract, payload);
+		emit DataSwapApproved(mAddress, mContract, payload, _fileHash);
 		return true;
 	}
 

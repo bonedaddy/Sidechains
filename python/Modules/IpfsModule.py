@@ -56,6 +56,7 @@ class Ipfs(Listener):
 	def add_file(self, obj):
 		response = self.api.add(obj)
 		self.hashes[response['Name']] = response['Hash']
+		return response
 
 	# returns the contents of file in bytes
 	def read_file_bytes(self, fileName):

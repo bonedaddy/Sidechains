@@ -4,6 +4,36 @@ Repository intended for experimentating with linking up a private ethereum netwo
 
 The actual work is done in a private repository I maintain, which is periodically synced with this one.
 
+Do note that only the data bridge is tested.
+
+# File Explanation:
+
+`solidity/Payload/PayloadAccumulator.sol` - Used on main chain to accumulate the data swap payloads sent by relayers
+`solidity/Bridges/PrivateDataBridge.sol` - Used on private chain to submit data payloads that you wish to be sent to main chain contracts
+`solidity/Bridges/PrivateTokenBridge.sol` - Used on private chain to submit token swaps to the main chain
+`solidity/Sealers.sol` - Used on private chain to track sealers, and authorize usage of functions on dependent contracts.
+`solidity/Relayers.sol` - Used on main chain to authorize usage of functions on contracts such as the Payload Accumulator
+
+`python/Relayer.py` - Used to watch for data swap approvals on the private chain, and forward them to the main chain
+`python/PrivateDataBridge.py` - USed to watch for data swap proposals on the private chain and approve them
+`python/Modules/IpfsModule.py` - Used to interact with IPFS
+`python/Modules/Bridge.py` - Bridge logic
+`python/Modules/Listener.py` - Used to listen to contract for events and optionally interact with them
+
+# Usage Instructions:
+
+## Usage Instructions - Factory.sol
+
+`solidity/Factory.sol` can be used to generate the Private Data Bridge contract, Private Token Bridge Contract, and the Sealers contract for your private ethereum network.
+
+Do note that until the MVP is complete you will have to fill out the various fields in the appropriate contracts (Payload Accumulator, Token Bridge, Sealers) and replace the hardcoded bytecode in the Factory file.
+
+After deploying the factory, the first contract you should deploy is the Sealers contract. Afterwards you can deploy the data bridge or the token bridge, etiher one is fine.
+
+## Usage Instructions - PrivateDataBridge.sol
+
+`solidity/PrivateDataBridge.sol`Nothing special needed to be done here, just make sure to update the yaml config file. 
+
 # Architecture
 
 The overall architecture follows a "relay" principle, in which anyone who has locked up the appropriate amount of mainnet ethereum as a stake, and incentivization method to help deter malicious actors, act as relays. Relays are used to relay data between the mainnet and private networks. Data from here on out can either refer to tokens, tokenized assets, or data payloads. Data payloads is the "data" included in `msg.data` when transactions are made to contracts. The goal behind this is to allow the execution of mainnet contract functions from the private network, or the execution of private network contract functions from the mainnet.
@@ -61,3 +91,10 @@ payload:	....
 compiles
 solc blah="." Bridges/PrivateDataBridge.sol
 ```
+
+
+# To Do
+
+the data brdge lets the same swap proposal be used multiple times this needs to be fixed
+
+decouple user from payload accumulator so we can upgrade accumulator without touching the user records
